@@ -23,6 +23,7 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 - Utility helpers (parameter count, model summary)
 - Ready for transfer learning / fine-tuning
 - CIFAR-10 training script included
+- Gradio web demo included
 - Well-documented and structured
 
 ---
@@ -99,22 +100,25 @@ python examples/quickstart.py
 
 ## Training on CIFAR-10
 
-A complete training script is provided:
-
 ```bash
 python train_cifar10.py --epochs 10 --batch-size 128 --lr 0.01
 ```
 
-Options:
-
-| Argument        | Default | Description              |
-|-----------------|---------|--------------------------|
-| `--epochs`      | 10      | Number of training epochs |
-| `--batch-size`  | 128     | Batch size               |
-| `--lr`          | 0.01    | Learning rate            |
-| `--save-dir`    | checkpoints | Directory to save best model |
-
 The best model will be saved to `checkpoints/alexnet_cifar10_best.pth`.
+
+---
+
+## Web Demo (Gradio)
+
+Launch a simple browser interface:
+
+```bash
+python app.py
+```
+
+Then open the local URL shown in the terminal. You can upload any image and see the top predictions.
+
+> Note: If no trained checkpoint is present, the demo uses randomly initialized weights.
 
 ---
 
@@ -130,7 +134,8 @@ alexnet-pytorch/
 │   └── quickstart.py     # Ready-to-run example
 ├── train.py              # Basic training script (dummy data)
 ├── train_cifar10.py      # Full CIFAR-10 training script
-├── inference.py          # Simple inference example
+├── inference.py          # Inference with checkpoint support
+├── app.py                # Gradio web demo
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
