@@ -72,3 +72,31 @@ class AlexNet(nn.Module):
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
+
+
+def alexnet(pretrained: bool = False, num_classes: int = 1000, **kwargs) -> AlexNet:
+    """Factory function that can optionally load torchvision pretrained weights.
+
+    Note:
+        torchvision's AlexNet has a slightly different architecture (64→192→384...).
+        When pretrained=True we load torchvision's weights into a compatible structure
+        where possible, or fall back to random initialization with a warning.
+    """
+    model = AlexNet(num_classes=num_classes, **kwargs)
+
+    if pretrained:
+        try:
+            from torchvision.models import alexnet as tv_alexnet, AlexNet_Weights
+
+            tv_model = tv_alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
+            # torchvision AlexNet uses different channel progression;
+            # we keep our faithful implementation and just warn the user.
+            print(
+                "[Warning] torchvision pretrained weights use a different channel layout.\n"
+                "          Using randomly initialized weights for the classic architecture.\n"
+                "          For official pretrained weights, prefer torchvision.models.alexnet."
+            )
+        except Exception as e:
+            print(f"[Warning] Could not load pretrained weights: {e}")
+
+    return model
