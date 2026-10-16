@@ -20,6 +20,7 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 - Faithful architecture to the original paper
 - Modern PyTorch practices (type hints, clean code)
 - Easy to use for both training and inference
+- Utility helpers (parameter count, model summary)
 - Ready for transfer learning / fine-tuning
 - Well-documented and structured
 
@@ -72,10 +73,25 @@ import torch
 model = AlexNet(num_classes=1000)
 model.eval()
 
-# Example input
 x = torch.randn(1, 3, 224, 224)
 output = model(x)
 print(output.shape)  # torch.Size([1, 1000])
+```
+
+### Model summary
+
+```python
+from alexnet import AlexNet, summary, count_parameters
+
+model = AlexNet()
+print(f"Parameters: {count_parameters(model):,}")
+summary(model)
+```
+
+### Run the example
+
+```bash
+python examples/quickstart.py
 ```
 
 ---
@@ -86,10 +102,14 @@ print(output.shape)  # torch.Size([1, 1000])
 alexnet-pytorch/
 ├── alexnet/
 │   ├── __init__.py
-│   └── model.py          # AlexNet implementation
-├── train.py              # Training script
+│   ├── model.py          # AlexNet implementation
+│   └── utils.py          # Helpers (summary, param count)
+├── examples/
+│   └── quickstart.py     # Ready-to-run example
+├── train.py              # Basic training script
 ├── inference.py          # Simple inference example
 ├── requirements.txt
+├── .gitignore
 ├── LICENSE
 └── README.md
 ```
