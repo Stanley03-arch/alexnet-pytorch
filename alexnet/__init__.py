@@ -1,4 +1,4 @@
-from .model import AlexNet
+from .model import AlexNet, alexnet
 from .utils import count_parameters, get_model_size_mb, summary
 
-__all__ = ["AlexNet", "count_parameters", "get_model_size_mb", "summary"]
+__all__ = ["AlexNet", "alexnet", "count_parameters", "get_model_size_mb", "summary"]
