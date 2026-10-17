@@ -1,7 +1,26 @@
 """
 AlexNet implementation in PyTorch
-Based on: Krizhevsky, Sutskever & Hinton (2012)
+=================================
+
+Faithful re-implementation of the architecture described in:
+
+    Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012).
+    ImageNet Classification with Deep Convolutional Neural Networks.
+    Advances in Neural Information Processing Systems, 25.
+
+Notes
+-----
+- Input size expected: (N, 3, 224, 224)
+- The original paper used Local Response Normalization (LRN).
+  Modern practice usually replaces LRN with BatchNorm or omits it.
+  This implementation follows the common modern variant without LRN
+  for better compatibility and performance.
+- torchvision.models.alexnet uses a different channel progression
+  (64 → 192 → 384 …). This implementation stays closer to the
+  original paper (96 → 256 → 384 …).
 """
+
+from __future__ import annotations
 
 from typing import Optional
 
@@ -10,40 +29,52 @@ import torch.nn as nn
 
 
 class AlexNet(nn.Module):
-    """AlexNet model architecture from the paper
-    "ImageNet Classification with Deep Convolutional Neural Networks".
+    """AlexNet convolutional neural network.
 
     Args:
-        num_classes (int): Number of classification classes. Default: 1000
-        dropout (float): Dropout probability. Default: 0.5
+        num_classes: Number of output classes. Default: 1000 (ImageNet).
+        dropout: Dropout probability applied before the fully-connected layers.
+                 Default: 0.5 (as in the original paper).
     """
 
     def __init__(self, num_classes: int = 1000, dropout: float = 0.5) -> None:
         super().__init__()
 
+        # -----------------------------------------------------------------
+        # Feature extractor (5 convolutional layers)
+        # -----------------------------------------------------------------
         self.features = nn.Sequential(
-            # Conv1
+            # Layer 1: 11×11 conv, stride 4 → 96 filters
             nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
-            # Conv2
+
+            # Layer 2: 5×5 conv → 256 filters
             nn.Conv2d(96, 256, kernel_size=5, padding=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
-            # Conv3
+
+            # Layer 3: 3×3 conv → 384 filters
             nn.Conv2d(256, 384, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            # Conv4
+
+            # Layer 4: 3×3 conv → 384 filters
             nn.Conv2d(384, 384, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            # Conv5
+
+            # Layer 5: 3×3 conv → 256 filters + pool
             nn.Conv2d(384, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
         )
 
+        # Adaptive pooling guarantees a fixed 6×6 spatial size
+        # regardless of slight input size variations.
         self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
 
+        # -----------------------------------------------------------------
+        # Classifier (3 fully-connected layers)
+        # -----------------------------------------------------------------
         self.classifier = nn.Sequential(
             nn.Dropout(p=dropout),
             nn.Linear(256 * 6 * 6, 4096),
@@ -64,6 +95,7 @@ class AlexNet(nn.Module):
         return x
 
     def _initialize_weights(self) -> None:
+        """Weight initialization following common modern practice."""
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
@@ -74,13 +106,22 @@ class AlexNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-def alexnet(pretrained: bool = False, num_classes: int = 1000, **kwargs) -> AlexNet:
-    """Factory function that can optionally load torchvision pretrained weights.
+def alexnet(
+    pretrained: bool = False,
+    num_classes: int = 1000,
+    **kwargs,
+) -> AlexNet:
+    """Convenience factory for AlexNet.
 
-    Note:
-        torchvision's AlexNet has a slightly different architecture (64→192→384...).
-        When pretrained=True we load torchvision's weights into a compatible structure
-        where possible, or fall back to random initialization with a warning.
+    Args:
+        pretrained: If True, attempts to load torchvision weights.
+                    Note that torchvision uses a different channel layout,
+                    so a warning is printed and random init is used instead.
+        num_classes: Number of output classes.
+        **kwargs: Extra arguments passed to the AlexNet constructor.
+
+    Returns:
+        An instance of :class:`AlexNet`.
     """
     model = AlexNet(num_classes=num_classes, **kwargs)
 
@@ -88,13 +129,13 @@ def alexnet(pretrained: bool = False, num_classes: int = 1000, **kwargs) -> Alex
         try:
             from torchvision.models import alexnet as tv_alexnet, AlexNet_Weights
 
-            tv_model = tv_alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
-            # torchvision AlexNet uses different channel progression;
-            # we keep our faithful implementation and just warn the user.
+            _ = tv_alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
             print(
-                "[Warning] torchvision pretrained weights use a different channel layout.\n"
-                "          Using randomly initialized weights for the classic architecture.\n"
-                "          For official pretrained weights, prefer torchvision.models.alexnet."
+                "[Warning] torchvision pretrained weights use a different "
+                "channel layout (64→192→…).\n"
+                "          This implementation stays faithful to the original "
+                "paper (96→256→…).\n"
+                "          Using randomly initialized weights."
             )
         except Exception as e:
             print(f"[Warning] Could not load pretrained weights: {e}")
