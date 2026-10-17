@@ -1,5 +1,5 @@
 """
-Gradio demo for AlexNet.
+Gradio web demo for AlexNet.
 
 Run:
     python app.py
@@ -18,42 +18,50 @@ from torchvision import transforms
 from alexnet import AlexNet
 
 # -------------------------------------------------
-# Model setup
+# Configuration
 # -------------------------------------------------
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_CLASSES = 10  # CIFAR-10 by default for the demo
+NUM_CLASSES = 10  # CIFAR-10 classes for the demo
 CLASS_NAMES = [
     "airplane", "automobile", "bird", "cat", "deer",
-    "dog", "frog", "horse", "ship", "truck"
+    "dog", "frog", "horse", "ship", "truck",
 ]
 
+# -------------------------------------------------
+# Model
+# -------------------------------------------------
 model = AlexNet(num_classes=NUM_CLASSES)
 model.to(DEVICE)
 model.eval()
 
-# Optional: load a trained checkpoint if it exists
 CKPT_PATH = Path("checkpoints/alexnet_cifar10_best.pth")
 if CKPT_PATH.exists():
-    state = torch.load(CKPT_PATH, map_location=DEVICE)
+    state = torch.load(CKPT_PATH, map_location=DEVICE, weights_only=True)
     model.load_state_dict(state)
-    print(f"Loaded checkpoint: {CKPT_PATH}")
+    STATUS = f"Loaded trained checkpoint: {CKPT_PATH}"
 else:
-    print("No checkpoint found — using randomly initialized weights (for demo only).")
+    STATUS = "No trained checkpoint found — using randomly initialized weights (demo only)."
 
+print(STATUS)
+print(f"Device: {DEVICE}")
 
 # -------------------------------------------------
-# Preprocessing
+# Preprocessing (same as training)
 # -------------------------------------------------
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    transforms.Normalize(
+        mean=(0.4914, 0.4822, 0.4465),
+        std=(0.2023, 0.1994, 0.2010),
+    ),
 ])
 
 
-def predict(image: Image.Image):
+def predict(image: Image.Image | None):
+    """Run inference and return top-5 predictions."""
     if image is None:
-        return None
+        return {}
 
     img = image.convert("RGB")
     x = transform(img).unsqueeze(0).to(DEVICE)
@@ -62,27 +70,34 @@ def predict(image: Image.Image):
         logits = model(x)
         probs = F.softmax(logits, dim=1)[0]
 
-    # Return top-5 predictions as a dictionary (Gradio Label)
-    top5 = torch.topk(probs, k=min(5, NUM_CLASSES))
-    result = {CLASS_NAMES[idx]: float(prob) for prob, idx in zip(top5.values, top5.indices)}
-    return result
+    topk = torch.topk(probs, k=min(5, NUM_CLASSES))
+    results = {
+        CLASS_NAMES[idx]: float(prob)
+        for prob, idx in zip(topk.values, topk.indices)
+    }
+    return results
 
 
 # -------------------------------------------------
-# Gradio interface
+# Gradio Interface
 # -------------------------------------------------
 demo = gr.Interface(
     fn=predict,
     inputs=gr.Image(type="pil", label="Upload an image"),
-    outputs=gr.Label(num_top_classes=5, label="Predictions"),
-    title="AlexNet Demo",
+    outputs=gr.Label(num_top_classes=5, label="Top Predictions"),
+    title="AlexNet — Image Classification Demo",
     description=(
-        "Classic AlexNet (Krizhevsky et al., 2012) implemented in PyTorch.\n\n"
+        "Classic **AlexNet** (Krizhevsky et al., 2012) implemented in PyTorch.\n\n"
+        f"**Status:** {STATUS}\n\n"
         "This demo uses the CIFAR-10 class set. "
-        "Upload any image to see the model's top predictions."
+        "Upload any image to see the model’s top-5 predictions."
     ),
-    examples=None,
+    article=(
+        "Built by [Stanley Samwel](https://github.com/Stanley03-arch) • "
+        "[Source code](https://github.com/Stanley03-arch/alexnet-pytorch)"
+    ),
     allow_flagging="never",
+    theme=gr.themes.Soft(),
 )
 
 if __name__ == "__main__":
