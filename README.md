@@ -17,7 +17,7 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 
 ### Key Features
 
-- Faithful architecture to the original paper
+- Faithful architecture to the original paper (96 → 256 → 384 channels)
 - Modern PyTorch practices (type hints, clean code)
 - Easy to use for both training and inference
 - Utility helpers (parameter count, model summary)
@@ -25,7 +25,7 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 - CIFAR-10 training script included
 - Gradio web demo included
 - Basic unit tests included
-- Well-documented and structured
+- Installable as a proper Python package
 
 ---
 
@@ -57,9 +57,17 @@ FC3 (1000)
 
 ## Installation
 
+### Option 1 — Clone and install locally
+
 ```bash
 git clone https://github.com/Stanley03-arch/alexnet-pytorch.git
 cd alexnet-pytorch
+pip install -e .
+```
+
+### Option 2 — Install dependencies only
+
+```bash
 pip install -r requirements.txt
 ```
 
@@ -143,6 +151,7 @@ alexnet-pytorch/
 ├── train_cifar10.py
 ├── inference.py
 ├── app.py                # Gradio demo
+├── pyproject.toml        # Package metadata
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
