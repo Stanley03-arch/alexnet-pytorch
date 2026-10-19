@@ -22,9 +22,10 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 - Easy to use for both training and inference
 - Utility helpers (parameter count, model summary)
 - Ready for transfer learning / fine-tuning
-- CIFAR-10 training script included
-- Gradio web demo included
-- Basic unit tests included
+- CIFAR-10 training script with progress bars
+- Training history visualization
+- Gradio web demo
+- Unit tests
 - Installable as a proper Python package
 
 ---
@@ -115,6 +116,24 @@ python train_cifar10.py --epochs 10 --batch-size 128 --lr 0.01
 
 The best model will be saved to `checkpoints/alexnet_cifar10_best.pth`.
 
+### Visualize training curves
+
+```bash
+python visualize_history.py
+```
+
+---
+
+## Inference
+
+```bash
+# On a real image
+python inference.py --image path/to/photo.jpg --checkpoint checkpoints/alexnet_cifar10_best.pth --num-classes 10
+
+# Random tensor (sanity check)
+python inference.py
+```
+
 ---
 
 ## Web Demo (Gradio)
@@ -122,8 +141,6 @@ The best model will be saved to `checkpoints/alexnet_cifar10_best.pth`.
 ```bash
 python app.py
 ```
-
-Open the local URL shown in the terminal to upload images and see predictions.
 
 ---
 
@@ -141,8 +158,8 @@ pytest tests/ -v
 alexnet-pytorch/
 ├── alexnet/
 │   ├── __init__.py
-│   ├── model.py          # AlexNet implementation
-│   └── utils.py          # Helpers (summary, param count)
+│   ├── model.py
+│   └── utils.py
 ├── examples/
 │   └── quickstart.py
 ├── tests/
@@ -150,8 +167,9 @@ alexnet-pytorch/
 ├── train.py
 ├── train_cifar10.py
 ├── inference.py
-├── app.py                # Gradio demo
-├── pyproject.toml        # Package metadata
+├── visualize_history.py
+├── app.py
+├── pyproject.toml
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
