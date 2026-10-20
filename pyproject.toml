@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alexnet-pytorch"
-version = "0.1.1"
+version = "0.1.2"
 description = "Clean and modern PyTorch implementation of AlexNet (Krizhevsky et al., 2012)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 demo = ["gradio>=4.0.0"]
-train = ["tqdm>=4.65.0"]
+train = ["tqdm>=4.65.0", "matplotlib>=3.7.0"]
 dev = ["pytest>=7.0.0", "black", "ruff", "tqdm>=4.65.0"]
 
 [project.urls]
