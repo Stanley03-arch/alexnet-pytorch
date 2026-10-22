@@ -4,6 +4,7 @@ Train AlexNet on CIFAR-10.
 Usage:
     python train_cifar10.py
     python train_cifar10.py --epochs 20 --batch-size 128 --lr 0.01
+    python train_cifar10.py --epochs 30 --patience 5   # early stopping
 """
 
 from __future__ import annotations
@@ -118,6 +119,17 @@ def main():
     parser.add_argument("--weight-decay", type=float, default=5e-4)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--save-dir", type=str, default="checkpoints")
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=0,
+        help="Early stopping patience (0 = disabled). Stop if test acc does not improve for N epochs.",
+    )
+    parser.add_argument(
+        "--freeze-features",
+        action="store_true",
+        help="Freeze the convolutional backbone (train only the classifier).",
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -125,15 +137,22 @@ def main():
     print(f"Epochs          : {args.epochs}")
     print(f"Batch size      : {args.batch_size}")
     print(f"Learning rate   : {args.lr}")
+    print(f"Early stopping  : {'patience=' + str(args.patience) if args.patience > 0 else 'disabled'}")
+    print(f"Freeze features : {args.freeze_features}")
 
     train_loader, test_loader = get_dataloaders(args.batch_size, args.num_workers)
 
     model = AlexNet(num_classes=10).to(device)
-    print(f"Parameters      : {count_parameters(model):,}")
+
+    if args.freeze_features:
+        model.freeze_features()
+        print("Feature extractor frozen — only classifier will be trained.")
+
+    print(f"Parameters      : {count_parameters(model):,} (trainable)")
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(
-        model.parameters(),
+        filter(lambda p: p.requires_grad, model.parameters()),
         lr=args.lr,
         momentum=args.momentum,
         weight_decay=args.weight_decay,
@@ -144,6 +163,7 @@ def main():
     save_dir.mkdir(parents=True, exist_ok=True)
 
     best_acc = 0.0
+    epochs_without_improvement = 0
     history = []
 
     print("\nStarting training...\n")
@@ -177,6 +197,7 @@ def main():
 
         if test_acc > best_acc:
             best_acc = test_acc
+            epochs_without_improvement = 0
             torch.save({
                 "epoch": epoch,
                 "model_state_dict": model.state_dict(),
@@ -184,6 +205,14 @@ def main():
                 "best_acc": best_acc,
             }, save_dir / "alexnet_cifar10_best.pth")
             print(f"  → Saved best model (acc: {best_acc:.2f}%)")
+        else:
+            epochs_without_improvement += 1
+            if args.patience > 0 and epochs_without_improvement >= args.patience:
+                print(
+                    f"\nEarly stopping triggered after {epoch} epochs "
+                    f"(no improvement for {args.patience} epochs)."
+                )
+                break
 
     total_time = time.time() - start_time
     print(f"\nTraining finished in {total_time / 60:.1f} minutes.")

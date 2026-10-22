@@ -94,6 +94,37 @@ class AlexNet(nn.Module):
         x = self.classifier(x)
         return x
 
+    def extract_features(self, x: torch.Tensor) -> torch.Tensor:
+        """Return the flattened feature vector before the classifier.
+
+        Useful for transfer learning, visualization, or as a fixed backbone.
+        Output shape: (N, 256 * 6 * 6) = (N, 9216)
+        """
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        return x
+
+    def freeze_features(self) -> None:
+        """Freeze the convolutional feature extractor (for transfer learning)."""
+        for param in self.features.parameters():
+            param.requires_grad = False
+
+    def unfreeze_features(self) -> None:
+        """Unfreeze the convolutional feature extractor."""
+        for param in self.features.parameters():
+            param.requires_grad = True
+
+    def freeze_classifier(self) -> None:
+        """Freeze the fully-connected classifier head."""
+        for param in self.classifier.parameters():
+            param.requires_grad = False
+
+    def unfreeze_classifier(self) -> None:
+        """Unfreeze the fully-connected classifier head."""
+        for param in self.classifier.parameters():
+            param.requires_grad = True
+
     def _initialize_weights(self) -> None:
         """Weight initialization following common modern practice."""
         for m in self.modules():

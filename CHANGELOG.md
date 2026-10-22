@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-22
+
+### Added
+- FLOPs / MACs counter (`count_flops`) and inclusion in model summary
+- Feature extraction method (`model.extract_features()`)
+- Freeze / unfreeze helpers for transfer learning (`freeze_features`, `unfreeze_features`, etc.)
+- Early stopping support in CIFAR-10 training (`--patience`)
+- Option to freeze the backbone during training (`--freeze-features`)
+- Model export script (`export.py`) for TorchScript and ONNX
+- Transfer-learning example (`examples/transfer_learning.py`)
+- Unit tests for new utilities and methods
+
+### Fixed
+- Gradio demo now correctly loads full training checkpoints (dict with `model_state_dict`)
+
+### Changed
+- Bumped package version to 0.2.0
+
 ## [0.1.2] - 2026-10-20
 
 ### Changed

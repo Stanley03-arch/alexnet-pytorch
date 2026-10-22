@@ -20,11 +20,12 @@ AlexNet was the breakthrough model that won the 2012 ImageNet competition and he
 - Faithful architecture to the original paper (96 → 256 → 384 channels)
 - Modern PyTorch practices (type hints, clean code)
 - Easy to use for both training and inference
-- Utility helpers (parameter count, model summary)
-- Ready for transfer learning / fine-tuning
-- CIFAR-10 training script with progress bars
+- Utility helpers (parameter count, model summary, **FLOPs**)
+- **Feature extraction** and **freeze/unfreeze** helpers for transfer learning
+- CIFAR-10 training script with progress bars and **early stopping**
 - Training history visualization
 - Gradio web demo
+- **Export to TorchScript / ONNX**
 - Unit tests
 - Installable as a proper Python package
 
@@ -90,20 +91,32 @@ output = model(x)
 print(output.shape)  # torch.Size([1, 1000])
 ```
 
-### Model summary
+### Model summary (includes FLOPs)
 
 ```python
-from alexnet import AlexNet, summary, count_parameters
+from alexnet import AlexNet, summary, count_parameters, count_flops
 
 model = AlexNet()
 print(f"Parameters: {count_parameters(model):,}")
+print(f"FLOPs: {count_flops(model) / 1e9:.2f} GFLOPs")
 summary(model)
 ```
+
+### Feature extraction & transfer learning
+
+```python
+model = AlexNet(num_classes=1000)
+model.freeze_features()          # freeze conv backbone
+features = model.extract_features(x)  # (N, 9216)
+```
+
+See `examples/transfer_learning.py` for a full example.
 
 ### Run the example
 
 ```bash
 python examples/quickstart.py
+python examples/transfer_learning.py
 ```
 
 ---
@@ -112,6 +125,9 @@ python examples/quickstart.py
 
 ```bash
 python train_cifar10.py --epochs 10 --batch-size 128 --lr 0.01
+
+# With early stopping and frozen backbone
+python train_cifar10.py --epochs 30 --patience 5 --freeze-features
 ```
 
 The best model will be saved to `checkpoints/alexnet_cifar10_best.pth`.
@@ -132,6 +148,16 @@ python inference.py --image path/to/photo.jpg --checkpoint checkpoints/alexnet_c
 
 # Random tensor (sanity check)
 python inference.py
+```
+
+---
+
+## Export (TorchScript / ONNX)
+
+```bash
+python export.py --checkpoint checkpoints/alexnet_cifar10_best.pth --num-classes 10
+# or
+python export.py --format onnx --output alexnet.onnx --num-classes 10
 ```
 
 ---
@@ -159,14 +185,17 @@ alexnet-pytorch/
 ├── alexnet/
 │   ├── __init__.py
 │   ├── model.py
-│   └── utils.py
+│   ├── utils.py
+│   └── transforms.py
 ├── examples/
-│   └── quickstart.py
+│   ├── quickstart.py
+│   └── transfer_learning.py
 ├── tests/
 │   └── test_model.py
 ├── train.py
 ├── train_cifar10.py
 ├── inference.py
+├── export.py
 ├── visualize_history.py
 ├── app.py
 ├── pyproject.toml

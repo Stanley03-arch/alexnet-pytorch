@@ -36,9 +36,16 @@ model.eval()
 
 CKPT_PATH = Path("checkpoints/alexnet_cifar10_best.pth")
 if CKPT_PATH.exists():
-    state = torch.load(CKPT_PATH, map_location=DEVICE, weights_only=True)
-    model.load_state_dict(state)
-    STATUS = f"Loaded trained checkpoint: {CKPT_PATH}"
+    state = torch.load(CKPT_PATH, map_location=DEVICE, weights_only=False)
+    if isinstance(state, dict) and "model_state_dict" in state:
+        model.load_state_dict(state["model_state_dict"])
+        STATUS = (
+            f"Loaded trained checkpoint: {CKPT_PATH} "
+            f"(epoch {state.get('epoch', '?')}, acc {state.get('best_acc', 0):.2f}%)"
+        )
+    else:
+        model.load_state_dict(state)
+        STATUS = f"Loaded trained checkpoint: {CKPT_PATH}"
 else:
     STATUS = "No trained checkpoint found — using randomly initialized weights (demo only)."
 

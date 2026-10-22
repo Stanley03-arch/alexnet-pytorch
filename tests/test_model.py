@@ -3,7 +3,7 @@
 import torch
 import pytest
 
-from alexnet import AlexNet, alexnet, count_parameters
+from alexnet import AlexNet, alexnet, count_parameters, count_flops
 
 
 def test_forward_shape_default():
@@ -75,6 +75,35 @@ def test_output_is_finite():
     with torch.no_grad():
         out = model(x)
     assert torch.isfinite(out).all()
+
+
+def test_extract_features():
+    model = AlexNet(num_classes=10)
+    model.eval()
+    x = torch.randn(2, 3, 224, 224)
+    with torch.no_grad():
+        feats = model.extract_features(x)
+    assert feats.shape == (2, 256 * 6 * 6)
+
+
+def test_freeze_unfreeze():
+    model = AlexNet(num_classes=10)
+    total_before = count_parameters(model)
+
+    model.freeze_features()
+    trainable_frozen = count_parameters(model)
+    assert trainable_frozen < total_before
+
+    model.unfreeze_features()
+    assert count_parameters(model) == total_before
+
+
+def test_count_flops():
+    model = AlexNet(num_classes=10)
+    model.eval()
+    flops = count_flops(model)
+    # AlexNet is typically in the ~1–2 GFLOP range for 224×224
+    assert flops > 100_000_000  # at least 0.1 GFLOP
 
 
 if __name__ == "__main__":
