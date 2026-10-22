@@ -8,6 +8,7 @@ from .utils import (
     get_device,
 )
 from .transforms import get_train_transforms, get_eval_transforms
+from .gradcam import GradCAM, overlay_cam_on_image
 
 __all__ = [
     "__version__",
@@ -20,4 +21,6 @@ __all__ = [
     "get_device",
     "get_train_transforms",
     "get_eval_transforms",
+    "GradCAM",
+    "overlay_cam_on_image",
 ]

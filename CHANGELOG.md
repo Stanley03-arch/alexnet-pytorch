@@ -5,12 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-23
+
+### Added
+- **Grad-CAM** explainability module (`alexnet.gradcam`) – pure PyTorch, no extra deps
+- Completely redesigned Gradio demo with tabs:
+  - Classify + Grad-CAM visual explanation
+  - Model Info (params, FLOPs, status)
+  - About
+- `overlay_cam_on_image` helper for beautiful heatmaps
+
+### Changed
+- Major demo upgrade from basic Interface to full Blocks UI
+- Bumped package version to 0.3.0
+
 ## [0.2.1] - 2026-10-23
 
 ### Added
 - Optional Local Response Normalization (LRN) support via `use_lrn=True`
   (matches the original 2012 paper after the first two convolutional layers)
 - Improved README with clearer differentiation, star CTA, and LRN documentation
+- Google Colab quickstart notebook + badge
 
 ### Changed
 - Bumped package version to 0.2.1

@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alexnet-pytorch"
-version = "0.2.1"
-description = "Clean and modern PyTorch implementation of AlexNet (Krizhevsky et al., 2012)"
+version = "0.3.0"
+description = "Clean, modern, and paper-faithful PyTorch implementation of AlexNet with Grad-CAM, transfer learning, and more"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Stanley Samwel", email = "owinostanley03@gmail.com"}
 ]
-keywords = ["pytorch", "alexnet", "deep-learning", "computer-vision", "cnn"]
+keywords = ["pytorch", "alexnet", "deep-learning", "computer-vision", "cnn", "gradcam"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-demo = ["gradio>=4.0.0"]
+demo = ["gradio>=4.0.0", "matplotlib>=3.7.0"]
 train = ["tqdm>=4.65.0", "matplotlib>=3.7.0"]
 dev = ["pytest>=7.0.0", "black", "ruff", "tqdm>=4.65.0"]
 
