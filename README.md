@@ -1,6 +1,6 @@
 # AlexNet (PyTorch)
 
-**Clean, modern, and paper-faithful implementation of AlexNet in PyTorch.**
+**Clean, modern, paper-faithful — and now extremely powerful.**
 
 > Original paper: [ImageNet Classification with Deep Convolutional Neural Networks](https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html) (Krizhevsky, Sutskever & Hinton, 2012)
 
@@ -18,10 +18,11 @@
 ## Why this implementation?
 
 Most public AlexNet re-implementations (including `torchvision`) use a modified channel progression (64 → 192 → …).  
-This repo stays **closer to the original 2012 paper**:
+This repo stays **closer to the original 2012 paper** and adds modern power features:
 
 - Channels: **96 → 256 → 384 → 384 → 256**
 - Optional **Local Response Normalization (LRN)** exactly as described in the paper
+- **Grad-CAM** visual explanations (pure PyTorch)
 - Clean modern PyTorch (type hints, no legacy code)
 - Ready for transfer learning, export, and experimentation
 
@@ -31,13 +32,14 @@ This repo stays **closer to the original 2012 paper**:
 
 - Faithful architecture to the original paper (96 → 256 → 384 channels)
 - Optional Local Response Normalization (`use_lrn=True`) for paper fidelity
+- **Grad-CAM explainability** with beautiful heatmap overlays
 - Modern PyTorch practices (type hints, clean code)
 - Easy to use for both training and inference
 - Utility helpers (parameter count, model summary, **FLOPs**)
 - **Feature extraction** and **freeze/unfreeze** helpers for transfer learning
 - CIFAR-10 training script with progress bars and **early stopping**
 - Training history visualization
-- Gradio web demo
+- **Powerful Gradio demo** (Classify + Explain, Model Info, About)
 - **Export to TorchScript / ONNX**
 - Unit tests
 - Installable as a proper Python package
@@ -136,6 +138,18 @@ features = model.extract_features(x)  # (N, 9216)
 
 See `examples/transfer_learning.py` for a full example.
 
+### Grad-CAM explanation
+
+```python
+from alexnet import AlexNet, GradCAM, overlay_cam_on_image
+from PIL import Image
+
+model = AlexNet(num_classes=10)
+cam = GradCAM(model)
+heatmap = cam(input_tensor)          # (H, W) normalized
+overlay = overlay_cam_on_image(image, heatmap)
+```
+
 ### Run the example
 
 ```bash
@@ -186,11 +200,17 @@ python export.py --format onnx --output alexnet.onnx --num-classes 10
 
 ---
 
-## Web Demo (Gradio)
+## Powerful Web Demo (Gradio)
 
 ```bash
+pip install gradio matplotlib   # if not already installed
 python app.py
 ```
+
+The demo now includes:
+- **Classify + Explain** tab with live Grad-CAM heatmaps
+- **Model Info** tab (parameters, FLOPs, status)
+- **About** tab
 
 ---
 
@@ -210,7 +230,8 @@ alexnet-pytorch/
 │   ├── __init__.py
 │   ├── model.py
 │   ├── utils.py
-│   └── transforms.py
+│   ├── transforms.py
+│   └── gradcam.py          # NEW: Grad-CAM
 ├── examples/
 │   ├── quickstart.py
 │   ├── transfer_learning.py
@@ -222,7 +243,7 @@ alexnet-pytorch/
 ├── inference.py
 ├── export.py
 ├── visualize_history.py
-├── app.py
+├── app.py                  # Powerful multi-tab Gradio demo
 ├── pyproject.toml
 ├── requirements.txt
 ├── .gitignore
