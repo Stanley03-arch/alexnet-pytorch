@@ -11,10 +11,10 @@ Faithful re-implementation of the architecture described in:
 Notes
 -----
 - Input size expected: (N, 3, 224, 224)
-- The original paper used Local Response Normalization (LRN).
-  Modern practice usually replaces LRN with BatchNorm or omits it.
-  This implementation follows the common modern variant without LRN
-  for better compatibility and performance.
+- The original paper used Local Response Normalization (LRN) after the first
+  two convolutional layers. Set ``use_lrn=True`` to enable it.
+- Modern practice usually replaces LRN with BatchNorm or omits it.
+  Default is ``use_lrn=False`` for better compatibility and performance.
 - torchvision.models.alexnet uses a different channel progression
   (64 → 192 → 384 …). This implementation stays closer to the
   original paper (96 → 256 → 384 …).
@@ -35,25 +35,44 @@ class AlexNet(nn.Module):
         num_classes: Number of output classes. Default: 1000 (ImageNet).
         dropout: Dropout probability applied before the fully-connected layers.
                  Default: 0.5 (as in the original paper).
+        use_lrn: If True, insert Local Response Normalization after the ReLU
+                 of the first two convolutional layers (as in the 2012 paper).
+                 Default: False (modern practice).
     """
 
-    def __init__(self, num_classes: int = 1000, dropout: float = 0.5) -> None:
+    def __init__(
+        self,
+        num_classes: int = 1000,
+        dropout: float = 0.5,
+        use_lrn: bool = False,
+    ) -> None:
         super().__init__()
+        self.use_lrn = use_lrn
 
         # -----------------------------------------------------------------
         # Feature extractor (5 convolutional layers)
         # -----------------------------------------------------------------
-        self.features = nn.Sequential(
+        layers = [
             # Layer 1: 11×11 conv, stride 4 → 96 filters
             nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=2),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
+        ]
+        if use_lrn:
+            # Original paper: size=5, alpha=1e-4, beta=0.75, k=2
+            layers.append(nn.LocalResponseNorm(size=5, alpha=1e-4, beta=0.75, k=2))
+        layers.append(nn.MaxPool2d(kernel_size=3, stride=2))
 
-            # Layer 2: 5×5 conv → 256 filters
+        # Layer 2: 5×5 conv → 256 filters
+        layers.extend([
             nn.Conv2d(96, 256, kernel_size=5, padding=2),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
+        ])
+        if use_lrn:
+            layers.append(nn.LocalResponseNorm(size=5, alpha=1e-4, beta=0.75, k=2))
+        layers.append(nn.MaxPool2d(kernel_size=3, stride=2))
 
+        # Layers 3–5 (no LRN in original paper)
+        layers.extend([
             # Layer 3: 3×3 conv → 384 filters
             nn.Conv2d(256, 384, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
@@ -66,7 +85,9 @@ class AlexNet(nn.Module):
             nn.Conv2d(384, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
-        )
+        ])
+
+        self.features = nn.Sequential(*layers)
 
         # Adaptive pooling guarantees a fixed 6×6 spatial size
         # regardless of slight input size variations.
@@ -140,6 +161,7 @@ class AlexNet(nn.Module):
 def alexnet(
     pretrained: bool = False,
     num_classes: int = 1000,
+    use_lrn: bool = False,
     **kwargs,
 ) -> AlexNet:
     """Convenience factory for AlexNet.
@@ -149,12 +171,13 @@ def alexnet(
                     Note that torchvision uses a different channel layout,
                     so a warning is printed and random init is used instead.
         num_classes: Number of output classes.
+        use_lrn: Whether to include Local Response Normalization (paper default).
         **kwargs: Extra arguments passed to the AlexNet constructor.
 
     Returns:
         An instance of :class:`AlexNet`.
     """
-    model = AlexNet(num_classes=num_classes, **kwargs)
+    model = AlexNet(num_classes=num_classes, use_lrn=use_lrn, **kwargs)
 
     if pretrained:
         try:

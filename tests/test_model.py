@@ -106,5 +106,21 @@ def test_count_flops():
     assert flops > 100_000_000  # at least 0.1 GFLOP
 
 
+def test_use_lrn():
+    """Test that LRN variant constructs and runs correctly."""
+    model = AlexNet(num_classes=10, use_lrn=True)
+    assert model.use_lrn is True
+    model.eval()
+    x = torch.randn(1, 3, 224, 224)
+    with torch.no_grad():
+        out = model(x)
+    assert out.shape == (1, 10)
+    assert torch.isfinite(out).all()
+
+    # Factory also accepts the flag
+    model2 = alexnet(num_classes=10, use_lrn=True)
+    assert model2.use_lrn is True
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

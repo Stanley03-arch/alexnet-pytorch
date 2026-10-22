@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alexnet-pytorch"
-version = "0.2.0"
+version = "0.2.1"
 description = "Clean and modern PyTorch implementation of AlexNet (Krizhevsky et al., 2012)"
 readme = "README.md"
 requires-python = ">=3.9"
