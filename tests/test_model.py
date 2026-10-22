@@ -2,8 +2,9 @@
 
 import torch
 import pytest
+import numpy as np
 
-from alexnet import AlexNet, alexnet, count_parameters, count_flops
+from alexnet import AlexNet, alexnet, count_parameters, count_flops, GradCAM
 
 
 def test_forward_shape_default():
@@ -120,6 +121,24 @@ def test_use_lrn():
     # Factory also accepts the flag
     model2 = alexnet(num_classes=10, use_lrn=True)
     assert model2.use_lrn is True
+
+
+def test_gradcam():
+    """Test Grad-CAM produces a valid heatmap."""
+    model = AlexNet(num_classes=10)
+    model.eval()
+    x = torch.randn(1, 3, 224, 224)
+
+    cam = GradCAM(model)
+    heatmap = cam(x)
+
+    assert isinstance(heatmap, np.ndarray)
+    assert heatmap.ndim == 2
+    assert heatmap.min() >= 0.0
+    assert heatmap.max() <= 1.0 + 1e-5
+    assert not np.isnan(heatmap).any()
+
+    cam.remove_hooks()
 
 
 if __name__ == "__main__":
