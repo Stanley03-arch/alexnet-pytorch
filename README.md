@@ -9,6 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![GitHub stars](https://img.shields.io/github/stars/Stanley03-arch/alexnet-pytorch?style=social)](https://github.com/Stanley03-arch/alexnet-pytorch)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Stanley03-arch/alexnet-pytorch/blob/main/examples/colab_quickstart.ipynb)
 
 ⭐ **If this implementation helps you, please consider starring the repository!** It helps others discover it.
 
@@ -40,6 +41,7 @@ This repo stays **closer to the original 2012 paper**:
 - **Export to TorchScript / ONNX**
 - Unit tests
 - Installable as a proper Python package
+- **Google Colab quickstart**
 
 ---
 
@@ -86,6 +88,10 @@ pip install -e .
 ```bash
 pip install -r requirements.txt
 ```
+
+### Option 3 — Google Colab (zero setup)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Stanley03-arch/alexnet-pytorch/blob/main/examples/colab_quickstart.ipynb)
 
 ---
 
@@ -207,7 +213,8 @@ alexnet-pytorch/
 │   └── transforms.py
 ├── examples/
 │   ├── quickstart.py
-│   └── transfer_learning.py
+│   ├── transfer_learning.py
+│   └── colab_quickstart.ipynb
 ├── tests/
 │   └── test_model.py
 ├── train.py
