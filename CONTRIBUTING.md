@@ -1,56 +1,38 @@
 # Contributing to alexnet-pytorch
 
-Thank you for your interest in contributing!
+Thanks for your interest in improving this AlexNet implementation.
 
-## Getting Started
+## Setup
 
-1. Fork the repository
-2. Clone your fork:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/alexnet-pytorch.git
-   cd alexnet-pytorch
-   ```
-3. Install in editable mode:
-   ```bash
-   pip install -e ".[dev]"
-   ```
+```bash
+git clone https://github.com/Stanley03-arch/alexnet-pytorch.git
+cd alexnet-pytorch
+pip install -e ".[dev]"
+# or: pip install -r requirements.txt pytest
+```
 
-## Development Workflow
+## Guidelines
 
-1. Create a new branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+- Keep the architecture **paper-faithful** (96 → 256 → 384 → 384 → 256 channels).
+- Prefer small, focused PRs with clear commit messages.
+- Update `CHANGELOG.md` and bump `__version__` when behavior or public API changes.
+- Run tests before opening a PR:
 
-2. Make your changes
+```bash
+pytest tests/ -v
+```
 
-3. Run the tests:
-   ```bash
-   pytest tests/ -v
-   ```
+## Useful areas
 
-4. Commit your changes with a clear message
+1. Extra unit tests (Grad-CAM, export, transfer helpers)
+2. Documentation / Colab notebook polish
+3. Training script improvements (logging, metrics)
+4. Performance notes or FLOPs edge cases
 
-5. Push and open a Pull Request
+## Style
 
-## Code Style
+- Type hints encouraged
+- Match existing formatting (Black-friendly)
+- Avoid unnecessary dependencies
 
-- Follow PEP 8
-- Use type hints where reasonable
-- Keep functions focused and readable
-- Add docstrings for public functions and classes
-
-## What can you contribute?
-
-- Bug fixes
-- Performance improvements
-- Better documentation
-- Additional tests
-- New examples or tutorials
-- Support for more datasets
-
-## Questions?
-
-Open an issue on GitHub and I’ll be happy to help.
-
-Thanks for contributing!
+By contributing, you agree that your contributions are licensed under the MIT License.
